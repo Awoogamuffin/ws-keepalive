@@ -1,0 +1,26 @@
+{
+  "name": "ws-keepalive",
+  "version": "0.0.1",
+  "description": "Websocket client/server using ping to keep alive and jsonrpc for messaging",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Awoogamuffin/ws-keepalive.git"
+  },
+  "author": "Michael Beeson <mbeeson@mac.com> (mbeetech.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Awoogamuffin/ws-keepalive/issues"
+  },
+  "homepage": "https://github.com/Awoogamuffin/ws-keepalive#readme",
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "jsonrpc-lite": "^2.1.0"
+  }
+}
