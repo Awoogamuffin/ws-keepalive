@@ -1,11 +1,11 @@
-import * as ws from 'ws';
+import * as WebSocket from 'ws';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as http from 'http';
 import { EventEmitter } from 'events';
 export class WskServer extends EventEmitter {
 
-    wss: ws.Server;
+    wss: WebSocket.Server;
 
     /**
      * Contructor automatically gets the server listening and sets it up to ping clients to ensure the
@@ -28,7 +28,7 @@ export class WskServer extends EventEmitter {
             server = http.createServer();
         }
         
-        this.wss = new ws.Server({ server });
+        this.wss = new WebSocket.Server({ server });
         server.listen(port);
 
         this.wss.on('connection', (ws: WebSocket) => {
