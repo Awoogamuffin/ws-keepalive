@@ -1,4 +1,4 @@
-export { WskClient } from "./WskClient";
+// export { WskClient } from "./WskClient";
 export { WskServer } from "./wskServer";
 
 export function logMessage(msg?: string) {
