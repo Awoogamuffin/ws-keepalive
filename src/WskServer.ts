@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as https from 'https';
 import * as http from 'http';
 import { EventEmitter } from 'events';
+import { WskClient } from './WskClient';
 export class WskServer extends EventEmitter {
 
     wss: WebSocket.Server;
@@ -31,7 +32,7 @@ export class WskServer extends EventEmitter {
         this.wss = new WebSocket.Server({ server });
         server.listen(port);
 
-        this.wss.on('connection', (ws: WebSocket) => {
+        this.wss.on('connection', (ws: WskClient) => {
             ws.send(JSON.stringify('Successfully connected to WSK server'));
         });
     }

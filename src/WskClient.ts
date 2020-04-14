@@ -1,8 +1,10 @@
-export class WskClient {
+import * as Websocket from 'ws'
+
+export class WskClient extends WebSocket {
 
     isAlive: boolean = false;
 
     constructor(url: string, protocols?: string | string[]) {
-        // super(url, protocols);
+        super(url, protocols);
     }
 }
