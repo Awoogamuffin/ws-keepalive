@@ -118,3 +118,5 @@ web_modules/
 .vscode
 
 src
+
+docker-compose.yml

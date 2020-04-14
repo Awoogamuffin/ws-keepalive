@@ -1,3 +1,3 @@
-export function logMessage(msg: string) {
-    console.log('LOGGING MESSAGE FROM PACKAGE!', msg);
+export function logMessage(msg?: string) {
+    return 'LOGGING MESSAGE FROM PACKAGE! ' + (msg || '');
 }

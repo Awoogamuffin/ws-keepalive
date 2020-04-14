@@ -118,3 +118,5 @@ web_modules/
 .vscode
 
 dist
+
+docker-compose.yml
