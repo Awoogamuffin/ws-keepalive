@@ -1,6 +1,6 @@
 {
   "name": "ws-keepalive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Websocket client/server using ping to keep alive and jsonrpc for messaging",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
