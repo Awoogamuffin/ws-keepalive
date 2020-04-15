@@ -25,7 +25,9 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "@types/shortid": "0.0.29",
     "jsonrpc-lite": "^2.1.0",
+    "shortid": "^2.2.15",
     "ws": "^7.2.3"
   }
 }

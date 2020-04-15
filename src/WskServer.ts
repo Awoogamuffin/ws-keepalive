@@ -2,8 +2,10 @@ import * as WebSocket from 'ws';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as http from 'http';
+import * as shortid from 'shortid';
 import { EventEmitter } from 'events';
 import { WskClient } from './WskClient';
+import jsonrpc from 'jsonrpc-lite';
 export class WskServer extends EventEmitter {
 
     wss: WebSocket.Server;
@@ -33,7 +35,9 @@ export class WskServer extends EventEmitter {
         server.listen(port);
 
         this.wss.on('connection', (ws: WskClient) => {
-            ws.send(JSON.stringify('Successfully connected to WSK server'));
+            const clientID: any = shortid.generate();
+            const payLoad = jsonrpc.request(clientID, 'WSK_assignUID', { uid: clientID });
+            ws.send(JSON.stringify(payLoad));
         });
     }
 
