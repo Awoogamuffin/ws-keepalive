@@ -26,6 +26,9 @@
   },
   "dependencies": {
     "@types/shortid": "0.0.29",
+    "fs": "0.0.1-security",
+    "http": "0.0.1-security",
+    "https": "^1.0.0",
     "jsonrpc-lite": "^2.1.0",
     "shortid": "^2.2.15",
     "ws": "^7.2.3"
