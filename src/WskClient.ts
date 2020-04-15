@@ -10,8 +10,24 @@ export class WskClient extends WebSocket {
         super(url, protocols);
         
         this.onmessage = (e: MessageEvent) => {
-            const payLoad = jsonrpc.parse(e.data);
-            console.log('payload!', payLoad);
-        };
+            const parsedMessage: any = jsonrpc.parse(JSON.parse(e.data));
+            console.log('payload!', parsedMessage);
+
+            const payload: any = parsedMessage.payload;
+
+            if (payload) {
+                switch(payload.method) {
+                    case 'WSK_assignID':
+                        this.assignID(payload);
+                        break;
+                }
+            }
+        }
+    }
+
+    assignID(payload: any) {
+        this.uid = payload.uid;
+
+        console.log('UID ASSIGNED!', this.uid);
     }
 }

@@ -36,8 +36,8 @@ export class WskServer extends EventEmitter {
 
         this.wss.on('connection', (ws: WskClient) => {
             const clientID: any = shortid.generate();
-            const payLoad = jsonrpc.request(clientID, 'WSK_assignUID', { uid: clientID });
-            ws.send(JSON.stringify(payLoad));
+            const payload = jsonrpc.request(clientID, 'WSK_assignUID', { uid: clientID });
+            ws.send(JSON.stringify(payload));
         });
     }
 
