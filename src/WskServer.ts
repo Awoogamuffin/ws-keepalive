@@ -14,6 +14,8 @@ export class WskServer extends EventEmitter {
     private requestTimeouts: any = {};
     timeoutValue: number = 10000;
 
+    assignUIDs = false;
+
     /**
      * Contructor automatically gets the server listening and sets it up to ping clients to ensure the
      * connection stays alive
@@ -41,15 +43,25 @@ export class WskServer extends EventEmitter {
         console.log('webserver created');
 
         this.wss.on('connection', (ws: WskWebsocket) => {
-            const clientUID: any = shortid.generate();
-            this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
 
+            if (this.assignUIDs) {
+                const clientUID: any = shortid.generate();
+                this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
+            }
+            
             ws.on('message', (d: WebSocket.Data) => {
                 console.log('RECEIVED DATA FROM CLIENT', d);
                 const datarpc: any = jsonrpc.parse(d as string);
                 console.log('datarpc', datarpc);
-                if (datarpc.type === 'success') {
-                    this.handleSuccess(datarpc.payload);
+
+                switch (datarpc.type) {
+                    case 'success':
+                        this.handleSuccess(datarpc.payload);
+                        break;
+
+                    case 'request':
+                        this.handleRequest(ws, datarpc);
+                        break;
                 }
             });
         });
@@ -78,10 +90,10 @@ export class WskServer extends EventEmitter {
      * @param params params to send to method
      */
 
-    sendRequest(client: WskWebsocket, method: string, params: any) {
+    sendRequest(ws: WskWebsocket, method: string, params: any) {
         const requestID = shortid.generate();
         const payload = jsonrpc.request(requestID, method, params);
-        client.send(JSON.stringify(payload));
+        ws.send(JSON.stringify(payload));
 
         this.requestTimeouts[requestID] = setTimeout(() => {
             delete this.requestTimeouts[requestID];
@@ -100,5 +112,10 @@ export class WskServer extends EventEmitter {
             delete this.requestTimeouts[data.id];
             console.log('received', data.result);
         }
+    }
+
+
+    handleRequest(ws: WskWebsocket, datarpc: any) {
+        this.emit('message', { ws: ws, datarpc: datarpc });
     }
 }

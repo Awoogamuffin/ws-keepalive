@@ -17,7 +17,7 @@ export class WskClient extends EventEmitter {
         });
     }
 
-    send(data: any) {
-        this.ws.sendRequest(data);
+    sendRequest(method: string, params: any) {
+        this.ws.sendRequest(method, params);
     }
 }

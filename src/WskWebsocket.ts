@@ -1,11 +1,15 @@
 
 import * as Websocket from 'ws';
 import * as jsonrpc from 'jsonrpc-lite';
+import * as shortid from 'shortid';
 
 export class WskWebsocket extends Websocket {
 
     uid!: string;
     isAlive: boolean = false;
+
+    requestTimeouts: any = {};
+    timeoutValue = 10000;
 
     constructor(url: string, protocols?: string | string[]) {
         super(url, protocols);
@@ -52,7 +56,14 @@ export class WskWebsocket extends Websocket {
         this.send(JSON.stringify(payload));
     }
 
-    sendRequest(data: any) {
+    sendRequest(method: string, params: any) {
+        const requestID = shortid.generate();
+        const payload = jsonrpc.request(requestID, method, params);
+        this.send(JSON.stringify(payload));
 
+        this.requestTimeouts[requestID] = setTimeout(() => {
+            delete this.requestTimeouts[requestID];
+            console.warn('request timed out: ', payload);
+        }, this.timeoutValue)
     }
 }
