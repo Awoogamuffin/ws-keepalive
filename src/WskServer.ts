@@ -9,12 +9,16 @@ import jsonrpc from 'jsonrpc-lite';
 import { WskWebsocket } from './WskWebsocket';
 export class WskServer extends EventEmitter {
 
-    wss: WebSocket.Server;
+    wss!: WebSocket.Server;
+    port: number;
 
     private requestTimeouts: any = {};
     timeoutValue: number = 10000;
+    pingValue: number = 4000;
 
     assignUIDs = false;
+
+    server: https.Server | http.Server;
 
     /**
      * Contructor automatically gets the server listening and sets it up to ping clients to ensure the
@@ -26,23 +30,31 @@ export class WskServer extends EventEmitter {
 
     constructor(port: number, certificatePath?: string, domain?: string) {
         super();
-        let server: https.Server | http.Server;
+        this.port = port;
         if (certificatePath && domain) {
             try {
-                server = this.createSecureServer(certificatePath, domain);
+                this.server = this.createSecureServer(certificatePath, domain);
             } catch(e) {
                 throw('failed to create ssl server');
             }
         } else {
-            server = http.createServer();
+            this.server = http.createServer();
         }
-        
+
+        this.createServer();
+    }
+
+    private createServer() {
+        // creating 
+        const server = this.server;
         this.wss = new WebSocket.Server({ server });
-        server.listen(port);
+        this.server.listen(this.port);
 
         console.log('webserver created');
 
         this.wss.on('connection', (ws: WskWebsocket) => {
+
+            ws.isAlive = true;
 
             if (this.assignUIDs) {
                 const clientUID: any = shortid.generate();
@@ -64,7 +76,29 @@ export class WskServer extends EventEmitter {
                         break;
                 }
             });
+
+            ws.on('pong', () => {
+                ws.isAlive = true;
+            })
         });
+
+        setInterval(() => {
+            this.wss.clients.forEach((wso: WebSocket) => {
+                const ws: WskWebsocket = wso as WskWebsocket;
+                if (!ws.isAlive) {
+                    return ws.terminate();
+                }
+
+                ws.isAlive = false;
+                if (ws && ws.readyState === ws.OPEN) {
+                    try {
+                        ws.ping(null, false);
+                    } catch(e) {
+                        console.warn('error while sending to client', e);
+                    }
+                }
+            })
+        }, this.pingValue);
     }
 
     /**
@@ -91,6 +125,10 @@ export class WskServer extends EventEmitter {
      */
 
     sendRequest(ws: WskWebsocket, method: string, params: any) {
+        if (!(ws && ws.readyState && ws.readyState === ws.OPEN)) {
+            console.warn('trying to send to websocket that isn\'t open');
+            return;
+        }
         const requestID = shortid.generate();
         const payload = jsonrpc.request(requestID, method, params);
         ws.send(JSON.stringify(payload));

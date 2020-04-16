@@ -13,8 +13,6 @@ export class WskWebsocket extends Websocket {
 
     constructor(url: string, protocols?: string | string[]) {
         super(url, protocols);
-
-        console.log('creating wsk client AGAIN');
         
         this.onmessage = (e: Websocket.MessageEvent) => {
             const datarpc: any = jsonrpc.parse(e.data as string);
