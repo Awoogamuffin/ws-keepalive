@@ -116,6 +116,7 @@ export class WskServer extends EventEmitter {
 
 
     handleRequest(ws: WskWebsocket, datarpc: any) {
+        console.log('emitting!', datarpc);
         this.emit('message', { ws: ws, datarpc: datarpc });
     }
 }
