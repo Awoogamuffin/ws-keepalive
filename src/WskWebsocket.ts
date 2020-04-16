@@ -57,6 +57,7 @@ export class WskWebsocket extends Websocket {
     }
 
     sendRequest(method: string, params: any) {
+        console.log('sending websocket request');
         const requestID = shortid.generate();
         const payload = jsonrpc.request(requestID, method, params);
         this.send(JSON.stringify(payload));
