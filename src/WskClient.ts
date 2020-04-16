@@ -1,35 +1,23 @@
 
-import * as Websocket from 'ws';
-import * as jsonrpc from 'jsonrpc-lite';
+import { EventEmitter } from 'events';
+import { WskWebsocket } from './WskWebsocket';
+import { MessageEvent } from 'ws';
 
-export class WskClient extends Websocket {
+export class WskClient extends EventEmitter {
 
-    uid!: string;
-    isAlive: boolean = false;
-    
+    ws: WskWebsocket;
+
     constructor(url: string, protocols?: string | string[]) {
-        super(url, protocols);
+        super();
+        this.ws = new WskWebsocket(url, protocols);
+
         
-        this.onmessage = (e: Websocket.MessageEvent) => {
-            console.log('DATA!', e.data);
-            /* const parsedMessage: any = jsonrpc.parse(JSON.parse(e.data));
-            console.log('payload!', parsedMessage);
-
-            const payload: any = parsedMessage.payload;
-
-            if (payload) {
-                switch(payload.method) {
-                    case 'WSK_assignID':
-                        this.assignID(payload);
-                        break;
-                }
-            } */
-        }
+        this.ws.on('passOnMessage', (e: MessageEvent) => {
+            this.emit('message', e);
+        });
     }
 
-    assignID(payload: any) {
-        this.uid = payload.uid;
-
-        console.log('UID ASSIGNED!', this.uid);
+    send(data: any) {
+        this.ws.sendRequest(data);
     }
 }

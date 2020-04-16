@@ -6,9 +6,13 @@ import * as shortid from 'shortid';
 import { EventEmitter } from 'events';
 import { WskClient } from './WskClient';
 import jsonrpc from 'jsonrpc-lite';
+import { WskWebsocket } from './WskWebsocket';
 export class WskServer extends EventEmitter {
 
     wss: WebSocket.Server;
+
+    private requestTimeouts: any = {};
+    timeoutValue: number = 10000;
 
     /**
      * Contructor automatically gets the server listening and sets it up to ping clients to ensure the
@@ -34,10 +38,20 @@ export class WskServer extends EventEmitter {
         this.wss = new WebSocket.Server({ server });
         server.listen(port);
 
-        this.wss.on('connection', (ws: WskClient) => {
-            const clientID: any = shortid.generate();
-            const payload = jsonrpc.request(clientID, 'WSK_assignUID', { uid: clientID });
-            ws.send(JSON.stringify(payload));
+        console.log('webserver created');
+
+        this.wss.on('connection', (ws: WskWebsocket) => {
+            const clientUID: any = shortid.generate();
+            this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
+
+            ws.on('message', (d: WebSocket.Data) => {
+                console.log('RECEIVED DATA FROM CLIENT', d);
+                const datarpc: any = jsonrpc.parse(d as string);
+                console.log('datarpc', datarpc);
+                if (datarpc.type === 'success') {
+                    this.handleSuccess(datarpc.payload);
+                }
+            });
         });
     }
 
@@ -54,5 +68,37 @@ export class WskServer extends EventEmitter {
         credentials.ca = fs.readFileSync(`${certificatePath}/${domain}/chain.pem`, 'utf8');
         
         return https.createServer(credentials);
+    }
+
+    /**
+     * Send a message to a client and await a response.
+     * @param client the websocket to send a message to
+     * 
+     * @param method name of method to run
+     * @param params params to send to method
+     */
+
+    sendRequest(client: WskWebsocket, method: string, params: any) {
+        const requestID = shortid.generate();
+        const payload = jsonrpc.request(requestID, method, params);
+        client.send(JSON.stringify(payload));
+
+        this.requestTimeouts[requestID] = setTimeout(() => {
+            delete this.requestTimeouts[requestID];
+            console.warn('request timed out: ', payload);
+        }, this.timeoutValue)
+    }
+
+
+    /**
+     * Clears timeout on requests
+     * @param data data received from client
+     */
+    handleSuccess(data: any) {
+        if (data.id) {
+            clearTimeout(this.requestTimeouts[data.id]);
+            delete this.requestTimeouts[data.id];
+            console.log('received', data.result);
+        }
     }
 }
