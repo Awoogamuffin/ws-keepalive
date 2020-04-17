@@ -42,6 +42,7 @@ export class WskClient extends EventEmitter {
 
         this.ws.onopen = (e) => {
             console.log('ON OPEN!');
+            this.emit('open');
             this.connectedToServer = true;
             this.checkHeartbeat();
         }

@@ -82,6 +82,7 @@ export class WskServer extends EventEmitter {
             });
 
             ws.on('close', () => {
+                console.log('removing websocket', ws.uid);
                 delete this.websocketsByUID[ws.uid];
             })
         });
@@ -90,6 +91,7 @@ export class WskServer extends EventEmitter {
             this.wss.clients.forEach((wso: WebSocket) => {
                 const ws: WskWebsocket = wso as WskWebsocket;
                 if (!ws.isAlive) {
+                    delete this.websocketsByUID[ws.uid];
                     return ws.terminate();
                 }
 
@@ -162,6 +164,7 @@ export class WskServer extends EventEmitter {
     }
 
     getWS(id: string): WskWebsocket | undefined {
+        console.log('retrieving websocket', id, this.websocketsByUID[id]);
         return this.websocketsByUID[id];
     }
 }
