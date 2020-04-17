@@ -33,6 +33,10 @@ export class WskWebsocket extends Websocket {
                     }
                     break;
                 
+                case 'success':
+                    this.handleSuccess(datarpc.payload);
+                    break;
+                
                 case 'invalid':
                     console.warn('received invalid json', jsonrpc);
                     break;
@@ -64,5 +68,17 @@ export class WskWebsocket extends Websocket {
             delete this.requestTimeouts[requestID];
             console.warn('request timed out: ', payload);
         }, this.timeoutValue)
+    }
+
+    /**
+     * Clears timeout on requests
+     * @param data data received from server
+     */
+    handleSuccess(data: any) {
+        if (data.id) {
+            clearTimeout(this.requestTimeouts[data.id]);
+            delete this.requestTimeouts[data.id];
+            console.log('received', data.result);
+        }
     }
 }

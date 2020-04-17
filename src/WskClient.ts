@@ -61,7 +61,7 @@ export class WskClient extends EventEmitter {
         }
 
         this.ws.onerror = (e) => {
-            console.warn('socket error');
+            console.warn('socket error', e);
             this.connectedToServer = false;
             this.ws.close();
         }

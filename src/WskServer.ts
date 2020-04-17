@@ -4,7 +4,6 @@ import * as https from 'https';
 import * as http from 'http';
 import * as shortid from 'shortid';
 import { EventEmitter } from 'events';
-import { WskClient } from './WskClient';
 import jsonrpc from 'jsonrpc-lite';
 import { WskWebsocket } from './WskWebsocket';
 export class WskServer extends EventEmitter {
@@ -163,8 +162,17 @@ export class WskServer extends EventEmitter {
         this.emit('message', { wsUID: ws.uid, datarpc: datarpc });
     }
 
-    getWS(id: string): WskWebsocket | undefined {
-        console.log('retrieving websocket', id, this.websocketsByUID[id]);
+    getWS(id: string): WskWebsocket {
         return this.websocketsByUID[id];
+    }
+
+    sendOKResponse(wsUID: any, requestID: any) {
+        console.log('send ok reponse', wsUID, requestID, Object.keys(this.websocketsByUID));
+        const ws = this.getWS(wsUID);
+        const payload: any = jsonrpc.success(requestID, 'OK');
+        if (ws) {
+            console.log('sending ok response', payload);
+            ws.send(JSON.stringify(payload));
+        }
     }
 }
