@@ -59,7 +59,7 @@ export class WskServer extends EventEmitter {
             const clientUID: any = shortid.generate();
             this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
             ws.uid = clientUID;
-            this.websocketsByUID[clientUID] = ws.uid;
+            this.websocketsByUID[clientUID] = ws;
             
             ws.on('message', (d: WebSocket.Data) => {
                 console.log('RECEIVED DATA FROM CLIENT', d);
