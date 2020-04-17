@@ -43,6 +43,7 @@ export class WskClient extends EventEmitter {
         this.ws.onopen = (e) => {
             console.log('ON OPEN!');
             this.connectedToServer = true;
+            this.checkHeartbeat();
         }
 
         this.ws.on('ping', () => {
@@ -65,7 +66,7 @@ export class WskClient extends EventEmitter {
         }
     }
 
-    checkHeartBeat() {
+    checkHeartbeat() {
         this.heartbeatTimeout = setTimeout(() => {
             if (!this.ws.isAlive) {
                 console.warn('lost connection to master server');
@@ -74,7 +75,7 @@ export class WskClient extends EventEmitter {
                 return;
             }
             this.ws.isAlive = false;
-            this.checkHeartBeat();
+            this.checkHeartbeat();
         }, this.heartbeatValue);
     }
 

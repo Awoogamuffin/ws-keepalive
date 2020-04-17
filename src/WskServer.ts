@@ -16,7 +16,7 @@ export class WskServer extends EventEmitter {
     timeoutValue: number = 10000;
     pingValue: number = 4000;
 
-    assignUIDs = false;
+    websocketsByUID: any = {};
 
     server: https.Server | http.Server;
 
@@ -56,10 +56,10 @@ export class WskServer extends EventEmitter {
 
             ws.isAlive = true;
 
-            if (this.assignUIDs) {
-                const clientUID: any = shortid.generate();
-                this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
-            }
+            const clientUID: any = shortid.generate();
+            this.sendRequest(ws, 'WSK_assignUID', { uid: clientUID });
+            ws.uid = clientUID;
+            this.websocketsByUID[clientUID] = ws.uid;
             
             ws.on('message', (d: WebSocket.Data) => {
                 console.log('RECEIVED DATA FROM CLIENT', d);
@@ -79,6 +79,10 @@ export class WskServer extends EventEmitter {
 
             ws.on('pong', () => {
                 ws.isAlive = true;
+            });
+
+            ws.on('close', () => {
+                delete this.websocketsByUID[ws.uid];
             })
         });
 
@@ -152,9 +156,12 @@ export class WskServer extends EventEmitter {
         }
     }
 
-
     handleRequest(ws: WskWebsocket, datarpc: any) {
         console.log('emitting!', datarpc);
-        this.emit('message', { ws: ws as WskWebsocket, datarpc: datarpc });
+        this.emit('message', { wsUID: ws.uid, datarpc: datarpc });
+    }
+
+    getWS(id: string): WskWebsocket | undefined {
+        return this.websocketsByUID[id];
     }
 }
