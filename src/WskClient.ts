@@ -26,7 +26,7 @@ export class WskClient extends EventEmitter {
     }
 
     sendRequest(method: string, params: any) {
-        if (!this.connectedToServer) {
+        if (this.ws.readyState !== this.ws.OPEN) {
             console.warn('trying to send when socket not connected');
             return;
         }
@@ -41,6 +41,7 @@ export class WskClient extends EventEmitter {
         this.ws = new WskWebsocket(this.url, this.protocols);
 
         this.ws.onopen = (e) => {
+            console.log('ON OPEN!');
             this.connectedToServer = true;
         }
 
@@ -78,6 +79,7 @@ export class WskClient extends EventEmitter {
     }
 
     reconnectSocket() {
+        console.log('reconnecting socket');
         this.connectedToServer = false;
         setTimeout(() => {
             this.startConnection();

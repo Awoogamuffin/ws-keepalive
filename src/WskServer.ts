@@ -72,7 +72,7 @@ export class WskServer extends EventEmitter {
                         break;
 
                     case 'request':
-                        this.handleRequest(ws, datarpc);
+                        this.handleRequest(ws as WskWebsocket, datarpc);
                         break;
                 }
             });
@@ -155,6 +155,6 @@ export class WskServer extends EventEmitter {
 
     handleRequest(ws: WskWebsocket, datarpc: any) {
         console.log('emitting!', datarpc);
-        this.emit('message', { ws: ws, datarpc: datarpc });
+        this.emit('message', { ws: ws as WskWebsocket, datarpc: datarpc });
     }
 }
