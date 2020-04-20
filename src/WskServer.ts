@@ -61,7 +61,6 @@ export class WskServer extends EventEmitter {
             this.websocketsByUID[clientUID] = ws;
             
             ws.on('message', (d: WebSocket.Data) => {
-                console.log('RECEIVED DATA FROM CLIENT', d);
                 const datarpc: any = jsonrpc.parse(d as string);
                 console.log('datarpc', datarpc);
 

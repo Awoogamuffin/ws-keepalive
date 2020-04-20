@@ -41,7 +41,6 @@ export class WskClient extends EventEmitter {
         this.ws = new WskWebsocket(this.url, this.protocols);
 
         this.ws.onopen = (e) => {
-            console.log('ON OPEN!');
             this.emit('open');
             this.connectedToServer = true;
             this.checkHeartbeat();
@@ -86,5 +85,9 @@ export class WskClient extends EventEmitter {
         setTimeout(() => {
             this.startConnection();
         }, 2000)
+    }
+
+    sendOkResponse(requestID: any) {
+        this.ws.sendOKResponse(requestID);
     }
 }
