@@ -6,12 +6,19 @@ import * as shortid from 'shortid';
 import { EventEmitter } from 'events';
 import jsonrpc from 'jsonrpc-lite';
 import { WskWebsocket } from './WskWebsocket';
+
+export interface requestResponse {
+    error?: any,
+    success?: any
+}
+
 export class WskServer extends EventEmitter {
 
     wss!: WebSocket.Server;
     port: number;
 
     private requestTimeouts: any = {};
+    private requestCallbacks: any = {};
     timeoutValue: number = 10000;
     pingValue: number = 4000;
 
@@ -128,19 +135,37 @@ export class WskServer extends EventEmitter {
      * @param params params to send to method
      */
 
-    sendRequest(ws: WskWebsocket, method: string, params: any) {
-        if (!(ws && ws.readyState && ws.readyState === ws.OPEN)) {
-            console.warn('trying to send to websocket that isn\'t open');
-            return;
-        }
-        const requestID = shortid.generate();
-        const payload = jsonrpc.request(requestID, method, params);
-        ws.send(JSON.stringify(payload));
-
-        this.requestTimeouts[requestID] = setTimeout(() => {
-            delete this.requestTimeouts[requestID];
-            console.warn('request timed out: ', payload);
-        }, this.timeoutValue)
+    sendRequest(ws: WskWebsocket, method: string, params: any, callback?: (res: requestResponse) => void) {
+        return new Promise((resolve, reject) => {
+            if (!(ws && ws.readyState && ws.readyState === ws.OPEN)) {
+                console.warn('trying to send to websocket that isn\'t open', ws.readyState);
+                if (callback) {
+                    callback({
+                        error: 'Websocket not open'
+                    });
+                }
+                return;
+            }
+            const requestID = shortid.generate();
+            const payload = jsonrpc.request(requestID, method, params);
+            ws.send(JSON.stringify(payload));
+    
+            if (callback) {
+                this.requestCallbacks[requestID] = callback;
+            }
+            this.requestTimeouts[requestID] = setTimeout(() => {
+                delete this.requestTimeouts[requestID];
+                if (callback) {
+                    delete this.requestCallbacks[requestID];
+                }
+                console.warn('request timed out: ', payload);
+                if (callback) {
+                    callback({
+                        error: 'Websocket timed out'
+                    });
+                }
+            }, this.timeoutValue);
+        });
     }
 
 
@@ -152,6 +177,12 @@ export class WskServer extends EventEmitter {
         if (data.id) {
             clearTimeout(this.requestTimeouts[data.id]);
             delete this.requestTimeouts[data.id];
+
+            if (this.requestCallbacks[data.id]) {
+                this.requestCallbacks[data.id]({
+                    success: data.result
+                });
+            }
             console.log('received', data.result);
         }
     }
